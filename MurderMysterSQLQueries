@@ -43,3 +43,11 @@ We know the crime was a Murder on Jan 15 2018 in SQL City to let's filter these 
 
 Select * FROM crime_scene_report
 WHERE city = 'SQL City' and date = 20180115
+
+date       type     description                                                                  city
+20180115   assault  Hamilton: Lee, do you yield? Burr: You shot him in the side! Yes he yields!  SQL City
+20180115   assault  Report Not Found                                                             SQL City
+20180115   murder   Security footage shows that there were 2 witnesses.                          SQL City
+                    The first witness lives at the last house on "Northwestern Dr". 
+                    The second witness, named Annabel, lives somewhere on "Franklin Ave".
+
