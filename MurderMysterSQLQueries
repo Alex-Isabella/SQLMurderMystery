@@ -20,7 +20,6 @@ solution
 income
 person
 
-
 The structure of the crime_scene_report table
 
 SELECT sql 
@@ -30,6 +29,7 @@ SELECT sql
 sql
 crime_scene_report ( date integer, type text, description text, city text )
 
+
 Now I know the table I need and it's structure time to poke around the data
 
 Select * FROM crime_scene_report
@@ -38,6 +38,7 @@ date      type     description                                          city
 20180115  robbery  A Man Dressed as Spider-Man Is on a Robbery Spree    NYC
 20180115  murder   Life? Dont talk to me about life                     Albany
 20180115  murder   Mama, I killed a man, put a gun against his head...  Reno
+
 
 We know the crime was a Murder on Jan 15 2018 in SQL City to let's filter these results
 
@@ -52,7 +53,6 @@ date       type     description                                                 
                     The second witness, named Annabel, lives somewhere on "Franklin Ave".
 
 
-
 Going to the Persons table and getting Annebels info
 
 Select * FROM person
@@ -62,6 +62,7 @@ address_street_name LIKE '%Franklin Ave%'
 
 id      name             license_id   address_number   address_street_name   ssn
 16371   Annabel Miller   490173       103              Franklin Ave          318771143
+
 
 Now getting the info for the person at the last house on Northwester Dr
 
@@ -85,4 +86,76 @@ person_id   transcript
             The man got into a car with a plate that included "H42W".
          
 16371       I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th.
+
+Now we know quite a bit. 
+The murderer is a man with a Gold Membership at Get Fit Now gym with his membership number starting with '48Z' and his licsence plate includes 'H42W'
+He was also at the gym the same time as ID:16371 on Jan 9th
+
+Checking the get_fit_now_check_in we can begin finding who we're looking for
+
+Select * FROM get_fit_now_check_in
+WHERE membership_id LIKE '%48Z%'
+AND
+check_in_date = '20180109'
+GROUP BY membership_id
+
+membership_id   check_in_date   check_in_time   check_out_time
+48Z55           20180109        1530            1700
+48Z7A           20180109        1600            1730
+
+We now have just two suspects
+
+Plugging this info into the member tables gives us names
+
+Select * FROM get_fit_now_member
+WHERE id LIKE '48Z55'
+OR
+id LIKE '48Z7A'
+
+id      person_id   name            membership_start_date   membership_status
+48Z7A   28819       Joe Germuska    20160305                gold
+48Z55   67318       Jeremy Bowers   20160101                gold
+
+Now let's see who has 'H42W' in their liscence plate
+
+To do this we have to grab their license_id and then use that to get their plate number
+
+Select * FROM person
+WHERE id LIKE '28819'
+OR
+id LIKE '67318'
+
+id      name            license_id   address_number   address_street_name     ssn
+28819   Joe Germuska    173289       111              Fisk Rd                 138909730
+67318   Jeremy Bowers   423327       530              Washington Pl, Apt 3A   871539279
+
+
+Now to use those license_id to find who has 'H42W' in their plate
+
+Select * FROM drivers_license
+WHERE id LIKE '173289'
+OR
+id LIKE '423327'
+
+This only brings back one result
+id       age   height   eye_color   hair_color   gender   plate_number   car_make    car_model
+423327   30    70       brown       brown        male     0H42W2         Chevrolet   Spark LS
+
+Matching that ID back gives us, 
+Jeremy Bowers who has H42W in his plate and he is a gold member at get fit gym and was there the same date as the witness
+
+Checking Solution
+
+INSERT INTO solution VALUES (1, 'Jeremy Bowers');
+        
+        SELECT value FROM solution;
+
+value
+Congrats, you found the murderer! 
+But wait, there's more... 
+If you think you're up for a challenge, try querying the interview transcript of the murderer to find the real villain behind this crime. 
+If you feel especially confident in your SQL skills, try to complete this final step with no more than 2 queries. 
+Use this same INSERT statement with your new suspect to check your answer.
+
+Woohoo We did it! Now let's find the real mastermind
 
