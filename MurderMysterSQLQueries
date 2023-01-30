@@ -51,3 +51,23 @@ date       type     description                                                 
                     The first witness lives at the last house on "Northwestern Dr". 
                     The second witness, named Annabel, lives somewhere on "Franklin Ave".
 
+
+
+Going to the Persons table and getting Annebels info
+
+Select * FROM person
+WHERE name LIKE '%Annabel%'
+AND
+address_street_name LIKE '%Franklin Ave%'
+
+id      name             license_id   address_number   address_street_name   ssn
+16371   Annabel Miller   490173       103              Franklin Ave          318771143
+
+Now getting the info for the person at the last house on Northwester Dr
+
+Select * FROM person
+WHERE address_street_name LIKE '%Northwestern Dr%'
+ORDER BY address_number DESC;
+
+id      name             license_id   address_number   address_street_name   ssn
+14887   Morty Schapiro   118009       4919             Northwestern Dr       111564949
