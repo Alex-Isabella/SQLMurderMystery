@@ -32,6 +32,7 @@ crime_scene_report ( date integer, type text, description text, city text )
 
 Now I know the table I need and it's structure time to poke around the data
 
+
 Select * FROM crime_scene_report
 
 date      type     description                                          city
@@ -41,6 +42,7 @@ date      type     description                                          city
 
 
 We know the crime was a Murder on Jan 15 2018 in SQL City to let's filter these results
+
 
 Select * FROM crime_scene_report
 WHERE city = 'SQL City' and date = 20180115
@@ -55,6 +57,7 @@ date       type     description                                                 
 
 Going to the Persons table and getting Annebels info
 
+
 Select * FROM person
 WHERE name LIKE '%Annabel%'
 AND
@@ -66,6 +69,7 @@ id      name             license_id   address_number   address_street_name   ssn
 
 Now getting the info for the person at the last house on Northwester Dr
 
+
 Select * FROM person
 WHERE address_street_name LIKE '%Northwestern Dr%'
 ORDER BY address_number DESC;
@@ -75,6 +79,7 @@ id      name             license_id   address_number   address_street_name   ssn
 
 
 Now we have the ID of the witnesses we can grab their interviews from the interview table
+
 
 Select * FROM interview 
 WHERE person_id = '16371'
@@ -87,11 +92,14 @@ person_id   transcript
          
 16371       I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th.
 
+
 Now we know quite a bit. 
 The murderer is a man with a Gold Membership at Get Fit Now gym with his membership number starting with '48Z' and his licsence plate includes 'H42W'
 He was also at the gym the same time as ID:16371 on Jan 9th
 
+
 Checking the get_fit_now_check_in we can begin finding who we're looking for
+
 
 Select * FROM get_fit_now_check_in
 WHERE membership_id LIKE '%48Z%'
@@ -103,7 +111,9 @@ membership_id   check_in_date   check_in_time   check_out_time
 48Z55           20180109        1530            1700
 48Z7A           20180109        1600            1730
 
+
 We now have just two suspects
+
 
 Plugging this info into the member tables gives us names
 
@@ -116,9 +126,11 @@ id      person_id   name            membership_start_date   membership_status
 48Z7A   28819       Joe Germuska    20160305                gold
 48Z55   67318       Jeremy Bowers   20160101                gold
 
-Now let's see who has 'H42W' in their liscence plate
 
+
+Now let's see who has 'H42W' in their liscence plate
 To do this we have to grab their license_id and then use that to get their plate number
+
 
 Select * FROM person
 WHERE id LIKE '28819'
@@ -132,19 +144,24 @@ id      name            license_id   address_number   address_street_name     ss
 
 Now to use those license_id to find who has 'H42W' in their plate
 
+
 Select * FROM drivers_license
 WHERE id LIKE '173289'
 OR
 id LIKE '423327'
 
 This only brings back one result
+
 id       age   height   eye_color   hair_color   gender   plate_number   car_make    car_model
 423327   30    70       brown       brown        male     0H42W2         Chevrolet   Spark LS
+
 
 Matching that ID back gives us, 
 Jeremy Bowers who has H42W in his plate and he is a gold member at get fit gym and was there the same date as the witness
 
+
 Checking Solution
+
 
 INSERT INTO solution VALUES (1, 'Jeremy Bowers');
         
@@ -159,3 +176,77 @@ Use this same INSERT statement with your new suspect to check your answer.
 
 Woohoo We did it! Now let's find the real mastermind
 
+
+Let's grab his interview
+
+SELECT * FROM interview
+WHERE person_id = '67318'
+
+person_id   transcript
+67318       I was hired by a woman with a lot of money. I don't know her name but I know she's around 5'5" (65") or 5'7" (67"). 
+            She has red hair and she drives a Tesla Model S. I know that she attended the SQL Symphony Concert 3 times in December 2017.
+            
+            
+Now to find this woman
+Let's start by grabbing an id through car, gender and hair color info
+
+
+Select * FROM drivers_license
+WHERE car_model LIKE '%model s%' 
+AND gender = 'female' 
+AND hair_color = 'red'
+
+id       age   height   eye_color   hair_color   gender   plate_number   car_make   car_model
+202298   68    66       green       red          female   500123         Tesla      Model S
+291182   65    66       blue        red          female   08CM64         Tesla      Model S
+918773   48    65       black       red          female   917UU3         Tesla      Model S
+
+
+Now to cross reference these ids and get a person_id
+
+
+Select * FROM person
+WHERE license_id = '202298'
+OR license_id = '291182'
+OR license_id = '918773'
+
+id      name               license_id   address_number   address_street_name   ssn
+78881   Red Korb           918773       107              Camerata Dr           961388910
+90700   Regina George      291182       332              Maple Ave             337169072
+99716   Miranda Priestly   202298       1883             Golden Ave            987756388
+
+
+with these new ids we got see who have attended the SQL Symphony Concert 3 times in Dec 2017 by checking the event table
+
+
+Select * FROM facebook_event_checkin
+WHERE event_name = 'SQL Symphony Concert'
+AND date LIKE '201712%%'
+AND person_id = '78881'
+OR person_id = '90700'
+OR person_id = '99716'
+
+This brings back only one person_id 
+
+person_id    event_id   event_name             date
+99716        1143       SQL Symphony Concert   20171206
+99716        1143       SQL Symphony Concert   20171212
+99716        1143       SQL Symphony Concert   20171229
+
+We have our suspect, Miranda Priestly
+
+
+Let's check our answer,
+
+
+INSERT INTO solution VALUES (1, 'Miranda Priestly');
+        
+        SELECT value FROM solution;
+        
+value
+Congrats, you found the brains behind the murder! 
+Everyone in SQL City hails you as the greatest SQL detective of all time. 
+Time to break out the champagne!
+
+
+WooHoo! What a fun SQL exercise!
